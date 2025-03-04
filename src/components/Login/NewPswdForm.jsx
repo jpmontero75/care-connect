@@ -26,6 +26,7 @@ function NewPswdForm({ email }) {
     if (isLongEnough && hasNumber && hasUppercase && hasLowercase) {
       newPswd(newPassword, email)
         .then(() => {
+          alert("Contraseña restablecida con éxito");
           window.location.reload();
         })
         .catch((err) => {

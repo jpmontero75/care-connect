@@ -6,7 +6,7 @@ export const SidebarData = [
     {
         icon: DashboardIcon,
         heading: "Dashboard",
-        route: "/dashboard",
+        route: "/",
         iconAlt: DashboardIcon
     },
 ]
