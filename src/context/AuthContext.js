@@ -25,23 +25,11 @@ export const AuthContextProvider = ({ children }) => {
 
       user.authenticateUser(authDetails, {
         onSuccess: (data) => {
-          user.getUserAttributes((err, attributes) => {
-            if (err) {
-              reject(err);
-            } else {
-              const roleAttr = attributes.find(
-                (attr) => attr.Name === "custom:role"
-              );
-              const role = roleAttr ? roleAttr.Value : null;
-
-              setUser(user); // Guardamos el usuario y su rol
-              setRole(role);
-              setUserEmail(email);
-              localStorage.setItem("userEmail", email);
-              localStorage.setItem("userRole", role); // Guardamos el rol en localStorage
-              resolve({ data, role });
-            }
-          });
+          setUser(user);
+          setUserEmail(email);
+          localStorage.setItem("userEmail", email);
+          setRole(data.idToken.payload["custom:role"]); // Asume que el rol está en el token
+          resolve(data);
         },
 
         onFailure: (err) => {
@@ -50,11 +38,11 @@ export const AuthContextProvider = ({ children }) => {
 
         newPasswordRequired: (userAttributes, requiredAttributes) => {
           setNewPswdRequired({
-            user: user,
+            required: true,
             userAttributes,
             requiredAttributes,
-            required: true,
           });
+          reject(new Error("Password reset required"));
         },
       });
     });
@@ -81,12 +69,19 @@ export const AuthContextProvider = ({ children }) => {
   };
 
   const logout = () => {
-    if (user) {
-      user.signOut();
-      setUser(null);
-    } else {
-      console.log("No user to sign out");
-    }
+    return new Promise((resolve) => {
+      const user = UserPool.getCurrentUser();
+      if (user) {
+        user.signOut();
+        setUser(null);
+        setRole("");
+        setNewPswdRequired({});
+        localStorage.clear();
+        resolve();
+      } else {
+        resolve();
+      }
+    });
   };
 
   const resetPassword = (email) => {
@@ -132,13 +127,18 @@ export const AuthContextProvider = ({ children }) => {
     if (user) {
       user.getSession((err, session) => {
         if (err) {
-          console.error(err);
+          setUser(null);
+          setRole("");
         } else {
           setUser(user);
+          setUserEmail(userEmail);
+          localStorage.setItem("userEmail", userEmail);
+          setRole(session.idToken.payload["custom:role"]); // Asume que el rol está en el token
         }
       });
     } else {
       setUser(null);
+      setRole("");
     }
   }, []);
 
