@@ -13,6 +13,7 @@ export const MainView = () => {
     try {
       await logout();
       navigate("/login");
+      localStorage.clear();
     } catch (e) {
       console.log(e.message);
     }
