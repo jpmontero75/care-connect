@@ -28,7 +28,16 @@ export const AuthContextProvider = ({ children }) => {
           setUser(user);
           setUserEmail(email);
           localStorage.setItem("userEmail", email);
-          setRole(data.idToken.payload["custom:role"]); // Asume que el rol está en el token
+          user.getUserAttributes((err, attributes) => {
+            if (err) {
+              setRole("");
+            } else {
+              const roleAttr = attributes.find(
+                (attr) => attr.Name === "custom:role"
+              );
+              roleAttr ? setRole(roleAttr.Value) : setRole("");
+            }
+          });
           resolve(data);
         },
 
@@ -133,7 +142,16 @@ export const AuthContextProvider = ({ children }) => {
           setUser(user);
           setUserEmail(userEmail);
           localStorage.setItem("userEmail", userEmail);
-          setRole(session.idToken.payload["custom:role"]); // Asume que el rol está en el token
+          user.getUserAttributes((err, attributes) => {
+            if (err) {
+              setRole("");
+            } else {
+              const roleAttr = attributes.find(
+                (attr) => attr.Name === "custom:role"
+              );
+              roleAttr ? setRole(roleAttr.Value) : setRole("");
+            }
+          });
         }
       });
     } else {
