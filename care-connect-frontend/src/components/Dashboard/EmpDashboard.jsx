@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import Swal from 'sweetalert2'
 import { styled } from "@mui/material/styles";
 import { tableCellClasses } from "@mui/material/TableCell";
 import {
@@ -90,8 +91,27 @@ const EmpDashboard = () => {
   };
 
   const handleDeletePatient = (id) => {
-    setPatients(patients.filter((p) => p.id !== id));
-  };
+    Swal.fire({
+      title: '¿Estás seguro?',
+      text: "¡No podrás revertir esto!",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#1e3b55',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        Swal.fire(
+          'Eliminado',
+          'El paciente ha sido eliminado.',
+          'success'
+        )
+        setPatients(patients.filter((p) => p.id !== id));
+      }
+    }
+    )
+  }
 
   return (
     <div className="flex flex-col w-full h-full gap-3 px-4 py-6 bg-transparent">
