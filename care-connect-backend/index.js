@@ -1,8 +1,14 @@
 require('dotenv').config();
 const express = require('express');
+const cors = require('cors');
 const { createClient } = require('@supabase/supabase-js');
 
 const app = express();
+app.use(cors({
+    origin: 'http://localhost:3000', // Permite solo el frontend
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type']
+}));
 app.use(express.json());
 
 const supabase = createClient(

@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import Swal from 'sweetalert2'
+import React, { useEffect, useState } from "react";
+import Swal from "sweetalert2";
 import { styled } from "@mui/material/styles";
 import { tableCellClasses } from "@mui/material/TableCell";
 import {
@@ -19,9 +19,15 @@ import {
   Typography,
 } from "@mui/material";
 import { Edit, Delete, Visibility } from "@mui/icons-material";
-
 import BarChartIcon from "@mui/icons-material/BarChart";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
+
+import {
+  fetchPatients,
+  addPatient,
+  editPatient,
+  deletePatient,
+} from "../../services/empApiEndpoints";
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
@@ -51,24 +57,24 @@ const modalStyle = {
 
 const EmpDashboard = () => {
   const [search, setSearch] = useState("");
-  const [patients, setPatients] = useState([
-    { id: 1, nombre: "Juan", apellido: "Pérez", edad: 30, estado: "Estable" },
-    { id: 2, nombre: "Ana", apellido: "Cantu", edad: 25, estado: "Crítico" },
-  ]);
-
+  const [patients, setPatients] = useState([]);
+  const [allPatients, setAllPatients] = useState([]);
   const [openModal, setOpenModal] = useState(false);
   const [editingPatient, setEditingPatient] = useState(null);
   const [patientData, setPatientData] = useState({
     nombre: "",
     apellido: "",
     edad: "",
-    estado: "Estable",
+    estado_salud: "Estable",
+    ultimaTomaSignos: new Date(),
   });
 
   const handleOpenModal = (patient = null) => {
     setEditingPatient(patient);
     setPatientData(
-      patient || { nombre: "", apellido: "", edad: "", estado: "Estable" }
+      patient
+        ? { ...patient }
+        : { nombre: "", apellido: "", edad: "", estado_salud: "Estable" }
     );
     setOpenModal(true);
   };
@@ -79,39 +85,90 @@ const EmpDashboard = () => {
     setPatientData({ ...patientData, [e.target.name]: e.target.value });
   };
 
-  const handleSavePatient = () => {
-    if (editingPatient) {
-      setPatients(
-        patients.map((p) => (p.id === editingPatient.id ? patientData : p))
-      );
-    } else {
-      setPatients([...patients, { id: patients.length + 1, ...patientData }]);
+  const fetchPatientsData = async () => {
+    try {
+      const patientsData = await fetchPatients();
+      setPatients(patientsData);
+      setAllPatients(patientsData);
+    } catch (error) {
+      console.error("Error fetching patients", error);
     }
-    handleCloseModal();
+  };
+
+  const handleSavePatient = async () => {
+    try {
+      if (editingPatient) {
+        handleCloseModal();
+        const result = await Swal.fire({
+          title: "¿Editar este paciente?",
+          text: "¿Estás seguro?",
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonColor: "#d1d5d9",
+          cancelButtonColor: "#1e3b55",
+          confirmButtonText: "Cancelar",
+          cancelButtonText: "Sí, guardar",
+        });
+
+        if (!result.isConfirmed) {
+          await editPatient(patientData, editingPatient.id);
+        } else {
+          return;
+        }
+      } else {
+        await addPatient(patientData);
+      }
+      const patientsData = await fetchPatients();
+      setPatients(patientsData);
+    } catch (error) {
+      console.error("Error saving patient", error);
+    } finally {
+      setPatientData({
+        nombre: "",
+        apellido: "",
+        edad: "",
+        estado_salud: "Estable",
+      });
+      handleCloseModal();
+    }
   };
 
   const handleDeletePatient = (id) => {
     Swal.fire({
-      title: '¿Estás seguro?',
+      title: "¿Estás seguro?",
       text: "¡No podrás revertir esto!",
-      icon: 'warning',
+      icon: "warning",
       showCancelButton: true,
-      confirmButtonColor: '#1e3b55',
-      cancelButtonColor: '#d33',
-      confirmButtonText: 'Sí, eliminar',
-      cancelButtonText: 'Cancelar'
-    }).then((result) => {
-      if (result.isConfirmed) {
-        Swal.fire(
-          'Eliminado',
-          'El paciente ha sido eliminado.',
-          'success'
-        )
-        setPatients(patients.filter((p) => p.id !== id));
+      confirmButtonColor: "#1e3b55",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Cancelar",
+      cancelButtonText: "Si, eliminar",
+    }).then(async (result) => {
+      if (!result.isConfirmed) {
+        Swal.fire("Eliminado", "El paciente ha sido eliminado.", "success");
+        await deletePatient(id);
+        const patientsData = await fetchPatients();
+        setPatients(patientsData);
       }
+    });
+  };
+
+  useEffect(() => {
+    fetchPatientsData();
+  }, []);
+
+  useEffect(() => {
+    if (search === "") {
+      setPatients(allPatients);
+    } else {
+      const filteredPatients = allPatients.filter(
+        (patient) =>
+          patient.nombre.toLowerCase().includes(search.toLowerCase()) ||
+          patient.apellido.toLowerCase().includes(search.toLowerCase())
+      );
+      setPatients(filteredPatients);
     }
-    )
-  }
+  }, [search, allPatients]);
 
   return (
     <div className="flex flex-col w-full h-full gap-3 px-4 py-6 bg-transparent">
@@ -159,10 +216,15 @@ const EmpDashboard = () => {
                       justifyContent: "center",
                     }}
                   >
-                    {patient.estado}{" "}
+                    {patient.estado_salud}{" "}
                     <BarChartIcon
                       sx={{
-                        color: patient.estado === "Crítico" ? "red" : "green",
+                        color:
+                          patient.estado_salud === "Crítico"
+                            ? "#ff4e4e"
+                            : patient.estado_salud === "Recuperación"
+                            ? "#f5b249"
+                            : "#55c595",
                         marginLeft: 1,
                       }}
                     />
@@ -202,7 +264,7 @@ const EmpDashboard = () => {
             margin="dense"
             label="Nombre"
             name="nombre"
-            value={patientData.nombre}
+            value={patientData.nombre || ""}
             onChange={handleChange}
           />
           <TextField
@@ -210,7 +272,7 @@ const EmpDashboard = () => {
             margin="dense"
             label="Apellido"
             name="apellido"
-            value={patientData.apellido}
+            value={patientData.apellido || ""}
             onChange={handleChange}
           />
           <TextField
@@ -219,7 +281,7 @@ const EmpDashboard = () => {
             label="Edad"
             name="edad"
             type="number"
-            value={patientData.edad}
+            value={patientData.edad || ""}
             onChange={handleChange}
           />
           <TextField
@@ -227,8 +289,8 @@ const EmpDashboard = () => {
             fullWidth
             margin="dense"
             label="Estado"
-            name="estado"
-            value={patientData.estado}
+            name="estado_salud"
+            value={patientData.estado_salud || "Estable"}
             onChange={handleChange}
           >
             <MenuItem value="Estable">Estable</MenuItem>
