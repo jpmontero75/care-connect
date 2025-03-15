@@ -28,6 +28,7 @@ import {
   editPatient,
   deletePatient,
 } from "../../services/empApiEndpoints";
+import PatientEmpView from "../PatientEmpView/PatientEmpView";
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
@@ -56,6 +57,8 @@ const modalStyle = {
 };
 
 const EmpDashboard = () => {
+  const [patientEmpView, setPatientEmpView] = useState(false);
+  const [patientId, setPatientId] = useState(null);
   const [search, setSearch] = useState("");
   const [patients, setPatients] = useState([]);
   const [allPatients, setAllPatients] = useState([]);
@@ -153,6 +156,11 @@ const EmpDashboard = () => {
     });
   };
 
+  const handleViewPatient = (id) => {
+    setPatientId(id);
+    setPatientEmpView(true);
+  };
+
   useEffect(() => {
     fetchPatientsData();
   }, []);
@@ -172,141 +180,154 @@ const EmpDashboard = () => {
 
   return (
     <div className="flex flex-col w-full h-full gap-3 px-4 py-6 bg-transparent">
-      <div className="flex items-center justify-between w-full h-[10%] rounded-2xl p-4 bg-[#d1d5da]">
-        <TextField
-          label="Buscar paciente"
-          variant="outlined"
-          size="small"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="w-2/3 bg-white rounded-md"
-        />
-        <Button
-          variant="contained"
-          sx={{ backgroundColor: "#1e3b55", color: "#fff", fontWeight: "bold" }}
-          startIcon={<AddCircleOutlineIcon />}
-          onClick={() => handleOpenModal()}
-        >
-          Añadir
-        </Button>
-      </div>
+      {patientEmpView ? (
+        <PatientEmpView patientId={patientId} />
+      ) : (
+        <>
+          <div className="flex items-center justify-between w-full h-[10%] rounded-2xl p-4 bg-[#d1d5da]">
+            <TextField
+              label="Buscar paciente"
+              variant="outlined"
+              size="small"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-2/3 bg-white rounded-md"
+            />
+            <Button
+              variant="contained"
+              sx={{
+                backgroundColor: "#1e3b55",
+                color: "#fff",
+                fontWeight: "bold",
+              }}
+              startIcon={<AddCircleOutlineIcon />}
+              onClick={() => handleOpenModal()}
+            >
+              Añadir
+            </Button>
+          </div>
 
-      <TableContainer component={Paper}>
-        <Table stickyHeader>
-          <TableHead>
-            <TableRow>
-              <StyledTableCell>Nombre</StyledTableCell>
-              <StyledTableCell>Apellido</StyledTableCell>
-              <StyledTableCell>Edad</StyledTableCell>
-              <StyledTableCell>Estado de Salud</StyledTableCell>
-              <StyledTableCell>Acciones</StyledTableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {patients.map((patient) => (
-              <TableRow key={patient.id}>
-                <StyledTableCell>{patient.nombre}</StyledTableCell>
-                <StyledTableCell>{patient.apellido}</StyledTableCell>
-                <StyledTableCell>{patient.edad}</StyledTableCell>
-                <StyledTableCell>
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                  >
-                    {patient.estado_salud}{" "}
-                    <BarChartIcon
-                      sx={{
-                        color:
-                          patient.estado_salud === "Crítico"
-                            ? "#ff4e4e"
-                            : patient.estado_salud === "Recuperación"
-                            ? "#f5b249"
-                            : "#55c595",
-                        marginLeft: 1,
-                      }}
-                    />
-                  </div>
-                </StyledTableCell>
-                <StyledTableCell>
-                  <IconButton color="primary">
-                    <Visibility />
-                  </IconButton>
-                  <IconButton
-                    color="primary"
-                    onClick={() => handleOpenModal(patient)}
-                  >
-                    <Edit />
-                  </IconButton>
-                  <IconButton
-                    color="secondary"
-                    onClick={() => handleDeletePatient(patient.id)}
-                    sx={{ ":hover": { color: "red" } }}
-                  >
-                    <Delete />
-                  </IconButton>
-                </StyledTableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
+          <TableContainer component={Paper}>
+            <Table stickyHeader>
+              <TableHead>
+                <TableRow>
+                  <StyledTableCell>Nombre</StyledTableCell>
+                  <StyledTableCell>Apellido</StyledTableCell>
+                  <StyledTableCell>Edad</StyledTableCell>
+                  <StyledTableCell>Estado de Salud</StyledTableCell>
+                  <StyledTableCell>Acciones</StyledTableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {patients.map((patient) => (
+                  <TableRow key={patient.id}>
+                    <StyledTableCell>{patient.nombre}</StyledTableCell>
+                    <StyledTableCell>{patient.apellido}</StyledTableCell>
+                    <StyledTableCell>{patient.edad}</StyledTableCell>
+                    <StyledTableCell>
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                        }}
+                      >
+                        {patient.estado_salud}{" "}
+                        <BarChartIcon
+                          sx={{
+                            color:
+                              patient.estado_salud === "Crítico"
+                                ? "#ff4e4e"
+                                : patient.estado_salud === "Recuperación"
+                                ? "#f5b249"
+                                : "#55c595",
+                            marginLeft: 1,
+                          }}
+                        />
+                      </div>
+                    </StyledTableCell>
+                    <StyledTableCell>
+                      <IconButton
+                        color="primary"
+                        onClick={() => handleViewPatient(patient.id)}
+                      >
+                        <Visibility />
+                      </IconButton>
+                      <IconButton
+                        color="primary"
+                        onClick={() => handleOpenModal(patient)}
+                      >
+                        <Edit />
+                      </IconButton>
+                      <IconButton
+                        color="secondary"
+                        onClick={() => handleDeletePatient(patient.id)}
+                        sx={{ ":hover": { color: "red" } }}
+                      >
+                        <Delete />
+                      </IconButton>
+                    </StyledTableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
 
-      <Modal open={openModal} onClose={handleCloseModal}>
-        <Box sx={modalStyle}>
-          <Typography variant="h6" component="h2" mb={2}>
-            {editingPatient ? "Editar Paciente" : "Agregar Paciente"}
-          </Typography>
-          <TextField
-            fullWidth
-            margin="dense"
-            label="Nombre"
-            name="nombre"
-            value={patientData.nombre || ""}
-            onChange={handleChange}
-          />
-          <TextField
-            fullWidth
-            margin="dense"
-            label="Apellido"
-            name="apellido"
-            value={patientData.apellido || ""}
-            onChange={handleChange}
-          />
-          <TextField
-            fullWidth
-            margin="dense"
-            label="Edad"
-            name="edad"
-            type="number"
-            value={patientData.edad || ""}
-            onChange={handleChange}
-          />
-          <TextField
-            select
-            fullWidth
-            margin="dense"
-            label="Estado"
-            name="estado_salud"
-            value={patientData.estado_salud || "Estable"}
-            onChange={handleChange}
-          >
-            <MenuItem value="Estable">Estable</MenuItem>
-            <MenuItem value="Crítico">Crítico</MenuItem>
-            <MenuItem value="Recuperación">Recuperación</MenuItem>
-          </TextField>
-          <Button
-            fullWidth
-            variant="contained"
-            sx={{ mt: 2, backgroundColor: "#1e3b55" }}
-            onClick={handleSavePatient}
-          >
-            {editingPatient ? "Actualizar" : "Guardar"}
-          </Button>
-        </Box>
-      </Modal>
+          <Modal open={openModal} onClose={handleCloseModal}>
+            <Box sx={modalStyle}>
+              <Typography variant="h6" component="h2" mb={2}>
+                {editingPatient ? "Editar Paciente" : "Agregar Paciente"}
+              </Typography>
+              <TextField
+                fullWidth
+                margin="dense"
+                label="Nombre"
+                name="nombre"
+                value={patientData.nombre || ""}
+                onChange={handleChange}
+              />
+              <TextField
+                fullWidth
+                margin="dense"
+                label="Apellido"
+                name="apellido"
+                value={patientData.apellido || ""}
+                onChange={handleChange}
+              />
+              <TextField
+                fullWidth
+                margin="dense"
+                label="Edad"
+                name="edad"
+                type="number"
+                value={patientData.edad || ""}
+                onChange={handleChange}
+              />
+              <TextField
+                select
+                fullWidth
+                margin="dense"
+                label="Estado"
+                name="estado_salud"
+                value={patientData.estado_salud || "Estable"}
+                onChange={handleChange}
+              >
+                <MenuItem value="Estable">Estable</MenuItem>
+                <MenuItem value="Crítico">Crítico</MenuItem>
+                <MenuItem value="Recuperación">Recuperación</MenuItem>
+              </TextField>
+              <Button
+                fullWidth
+                variant="contained"
+                sx={{ mt: 2, backgroundColor: "#1e3b55" }}
+                onClick={handleSavePatient}
+              >
+                {editingPatient ? "Actualizar" : "Guardar"}
+              </Button>
+            </Box>
+          </Modal>
+        </>
+      )}
     </div>
   );
 };
