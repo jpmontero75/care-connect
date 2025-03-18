@@ -112,3 +112,30 @@ export async function deletePatient(id) {
     throw error;
   }
 }
+export async function fetchPatientLastVitals(patientId) {
+  try {
+    const url = `${API_BASE_URL}/vitals/last/${patientId}`;
+
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+
+    return data;
+  } catch (error) {
+    if (error.name === "AbortError") {
+      //console.log("Fetch aborted");
+    } else {
+      console.error("Error fetching patient data", error);
+    }
+    throw error;
+  }
+}

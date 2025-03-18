@@ -85,20 +85,36 @@ app.post("/vitals", async (req, res) => {
 });
 
 // Obtener la última medición de signos vitales de un paciente
+// Obtener la última medición de signos vitales de un paciente con información del paciente
 app.get("/vitals/last/:patient_id", async (req, res) => {
     const { patient_id } = req.params;
 
-    const { data, error } = await supabase.from("vitals")
-        .select("*")
-        .eq("patient_id", patient_id)
-        .order("fecha_registro", { ascending: false })
-        .limit(1);
+    try {
+        // Obtener la última medición de signos vitales
+        const { data: vitals, error: vitalsError } = await supabase.from("vitals")
+            .select("*")
+            .eq("patient_id", patient_id)
+            .order("fecha_registro", { ascending: false })
+            .limit(1);
 
-    if (error) return res.status(500).json({ error: error.message });
-    if (data.length === 0) return res.status(404).json({ error: "No hay registros para este paciente" });
+        if (vitalsError) return res.status(500).json({ error: vitalsError.message });
+        if (vitals.length === 0) return res.status(404).json({ error: "No hay registros para este paciente" });
 
-    res.json(data[0]);
+        // Obtener la información del paciente
+        const { data: patient, error: patientError } = await supabase.from("patients")
+            .select("nombre, apellido, edad, estado_salud")
+            .eq("id", patient_id)
+            .single();
+
+        if (patientError || !patient) return res.status(404).json({ error: "Paciente no encontrado" });
+
+        // Devolver la información combinada
+        res.json({ ...vitals[0], paciente: patient });
+    } catch (error) {
+        res.status(500).json({ error: "Error interno del servidor" });
+    }
 });
+
 
 // Obtener tendencias de signos vitales
 app.get("/vitals/trends/:patient_id", async (req, res) => {

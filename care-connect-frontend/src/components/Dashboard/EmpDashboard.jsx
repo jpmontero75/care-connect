@@ -181,7 +181,7 @@ const EmpDashboard = () => {
   return (
     <div className="flex flex-col w-full h-full gap-3 px-4 py-6 bg-transparent">
       {patientEmpView ? (
-        <PatientEmpView patientId={patientId} />
+        <PatientEmpView patientId={patientId} setPatientEmpView={setPatientEmpView} />
       ) : (
         <>
           <div className="flex items-center justify-between w-full h-[10%] rounded-2xl p-4 bg-[#d1d5da]">
