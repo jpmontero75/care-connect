@@ -37,7 +37,7 @@ const PatientEmpView = ({ patientId, setPatientEmpView }) => {
   return (
     <div className="w-full h-full grid grid-cols-4 grid-rows-4 gap-2">
       <div className="row-span-2 flex flex-col gap-1 bg-[#d1d5d9] border-black border-1 rounded-2xl shadow-xl">
-        <div className="w-full p-4 flex items-center">
+        <div className="w-full p-4 pb-0 flex items-center">
           {/* Botón para regresar */}
           <IconButton onClick={() => setPatientEmpView(false)}>
             <ArrowBackIosIcon />
@@ -47,29 +47,29 @@ const PatientEmpView = ({ patientId, setPatientEmpView }) => {
           </h1>
         </div>
         <div className="w-full">
-          <ul className="w-full px-6">
-            <li className="flex gap-2">
-              <h2 className="font-bold text-[#283945] truncate">Nombre:</h2>
+          <ul className="w-full pl-6">
+            <li className="flex gap-2 items-center">
+              <h2 className="font-bold text-[#283945] text-xl truncate">Nombre:</h2>
               <p>{patientData.paciente.nombre}</p>
             </li>
-            <li className="flex gap-1">
-              <h2 className="font-bold text-[#283945] truncate">Apellido:</h2>
+            <li className="flex gap-2 items-center">
+              <h2 className="font-bold text-[#283945] text-xl truncate">Apellido:</h2>
               <p>{patientData.paciente.apellido}</p>
             </li>
-            <li className="flex gap-1">
-              <h2 className="font-bold text-[#283945] truncate">Edad:</h2>
+            <li className="flex gap-2 items-center">
+              <h2 className="font-bold text-[#283945] text-xl truncate">Edad:</h2>
               <p>{patientData.paciente.edad}</p>
             </li>
-            <li className="flex gap-1">
-              <h2 className="font-bold text-[#283945] truncate">Peso:</h2>
+            <li className="flex gap-2 items-center">
+              <h2 className="font-bold text-[#283945] text-xl truncate">Peso:</h2>
               <p>{patientData.peso}</p>
             </li>
-            <li className="flex gap-1">
-              <h2 className="font-bold text-[#283945] truncate">Estatura:</h2>
+            <li className="flex gap-2 items-center">
+              <h2 className="font-bold text-[#283945] text-xl truncate">Estatura:</h2>
               <p>{patientData.estatura}</p>
             </li>
-            <li className="flex gap-1">
-              <h2 className="font-bold text-[#283945] truncate">
+            <li className="flex gap-2 items-center">
+              <h2 className="font-bold text-[#283945] text-xl truncate">
                 Estado de salud:
               </h2>
               <p>{patientData.paciente.estado_salud}</p>
