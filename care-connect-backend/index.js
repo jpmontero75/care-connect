@@ -84,7 +84,6 @@ app.post("/vitals", async (req, res) => {
     res.status(201).json(data[0]);
 });
 
-// Obtener la última medición de signos vitales de un paciente
 // Obtener la última medición de signos vitales de un paciente con información del paciente
 app.get("/vitals/last/:patient_id", async (req, res) => {
     const { patient_id } = req.params;

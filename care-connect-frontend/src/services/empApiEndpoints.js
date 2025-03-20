@@ -112,6 +112,36 @@ export async function deletePatient(id) {
     throw error;
   }
 }
+export async function addPatientVitals(vitalsData) {
+  try {
+    const url = `${API_BASE_URL}/vitals`;
+
+    console.log("vitalsData", JSON.stringify(vitalsData));
+
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(vitalsData),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+
+    return data;
+  } catch (error) {
+    if (error.name === "AbortError") {
+      //console.log("Fetch aborted");
+    } else {
+      console.error("Error adding vitals", error);
+    }
+    throw error;
+  }
+}
 export async function fetchPatientLastVitals(patientId) {
   try {
     const url = `${API_BASE_URL}/vitals/last/${patientId}`;
